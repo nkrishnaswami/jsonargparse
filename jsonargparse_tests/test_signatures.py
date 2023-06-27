@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -575,3 +576,27 @@ def test_add_function_group_config_within_config(parser, tmp_cwd):
     cfg = parser.parse_args([f"--cfg={cfg_path}"])
     assert str(cfg.func.__path__) == str(subcfg_path)
     assert strip_meta(cfg.func) == Namespace(a1="one", a2=2.0, a3=True)
+
+
+@dataclass
+class RequiredOptional:
+    arg: Optional[str]
+
+
+def test_optional_member_without_default_is_present(parser):
+    parser.add_class_arguments(RequiredOptional, 'a')
+    cfg = parser.parse_args(['--a.arg=apple'])
+    assert cfg.a.arg == 'apple'
+
+
+def test_optional_member_without_default_is_null(parser):
+    parser.add_class_arguments(RequiredOptional, 'a')
+    cfg = parser.parse_args(['--a.arg=null'])
+    assert cfg.a.arg is None
+
+
+def test_optional_member_without_default_missing(parser):
+    parser.add_class_arguments(RequiredOptional, 'a')
+    with pytest.raises(ArgumentError) as exc_info:
+        parser.parse_args([])
+    assert exc_info.match('"a.arg"')

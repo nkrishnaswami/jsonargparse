@@ -290,7 +290,8 @@ class SignatureArguments(LoggerProperty):
         annotation = param.annotation
         if default == inspect_empty:
             default = param.default
-        is_required = default == inspect_empty
+        is_required = (default == inspect_empty and
+                       not is_optional(annotation, object))
         src = get_parameter_origins(param.component, param.parent)
         skip_message = f'Skipping parameter "{name}" from "{src}" because of: '
         if not fail_untyped and annotation == inspect_empty:

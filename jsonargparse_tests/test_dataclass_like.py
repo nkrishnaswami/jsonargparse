@@ -284,6 +284,7 @@ def test_attribute_docstrings(parser):
 @dataclasses.dataclass
 class Data:
     p1: str
+    p3: Optional[int]
     p2: int = 0
 
 
@@ -292,13 +293,13 @@ parser_optional_data.add_argument("--data", type=Optional[Data])
 
 
 def test_optional_dataclass_type_all_fields():
-    cfg = parser_optional_data.parse_args(['--data={"p1": "x", "p2": 1}'])
-    assert cfg == Namespace(data=Namespace(p1="x", p2=1))
+    cfg = parser_optional_data.parse_args(['--data={"p1": "x", "p2": 1, "p3": 1}'])
+    assert cfg == Namespace(data=Namespace(p1="x", p2=1, p3=1))
 
 
 def test_optional_dataclass_type_single_field():
-    cfg = parser_optional_data.parse_args(['--data={"p1": "y"}'])
-    assert cfg == Namespace(data=Namespace(p1="y", p2=0))
+    cfg = parser_optional_data.parse_args(['--data={"p1": "y", "p3": null}'])
+    assert cfg == Namespace(data=Namespace(p1="y", p2=0, p3=None))
 
 
 def test_optional_dataclass_type_invalid_field():
@@ -307,15 +308,16 @@ def test_optional_dataclass_type_invalid_field():
 
 
 def test_optional_dataclass_type_instantiate():
-    cfg = parser_optional_data.parse_args(['--data={"p1": "y", "p2": 2}'])
+    cfg = parser_optional_data.parse_args(['--data={"p1": "y", "p3": null, "p2": 2}'])
     init = parser_optional_data.instantiate_classes(cfg)
     assert isinstance(init.data, Data)
     assert init.data.p1 == "y"
     assert init.data.p2 == 2
+    assert init.data.p3 is None
 
 
 def test_optional_dataclass_type_dump():
-    cfg = parser_optional_data.parse_args(['--data={"p1": "z"}'])
+    cfg = parser_optional_data.parse_args(['--data={"p1": "z", "p3": null}'])
     assert parser_optional_data.dump(cfg) == "data:\n  p1: z\n  p2: 0\n"
 
 
